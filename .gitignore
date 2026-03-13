@@ -17,4 +17,6 @@ logs/
 
 # Ignore Python cache
 __pycache__/
-.ipynb_checkpoints/
+
+# Ignore demo outputs
+reports/demo_outputs/ 
