@@ -99,7 +99,7 @@ joblib.dump(output_scaler, os.path.join(MODELS_DIR, "cl_cd_output_scaler.pkl"))
 
 # Cp-Integrated Cl from 1D-CNN
 print("\nLoading 1D-CNN Cp Surrogate for integration comparison")
-cnn_model = tf.keras.models.load_model(os.path.join(MODELS_DIR, "cnn_cp_model.keras"))
+cnn_model = tf.keras.models.load_model(os.path.join(MODELS_DIR, "pinn_cnn_model.keras"))
 cnn_in_scaler = joblib.load(os.path.join(MODELS_DIR, "cnn_input_scaler.pkl"))
 cnn_out_scaler = joblib.load(os.path.join(MODELS_DIR, "cnn_output_scaler.pkl"))
 
