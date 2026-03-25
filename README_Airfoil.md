@@ -53,6 +53,7 @@ INPUT        LATENT CORE               BRANCHES (Multi-Task)          OUTPUTS
 The PINN architecture successfully decoupled aerodynamic fidelity from computational cost, producing a surrogate ready for real-time deployment.
 
 | Metric                         | ANSYS CFD (Ground Truth) | PINN Surrogate
+| :---                           | :---                     | :---
 | **Compute Time / Case**        | ~711 seconds             | < 0.05 seconds 
 | **Computational Speedup**      | Baseline                 | **93,424x Faster**
 | **Global Force Error**         | Baseline                 | < 2.0% (via Direct MLP)

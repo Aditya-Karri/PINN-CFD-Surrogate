@@ -17,6 +17,7 @@ The case was tested at a high Angle of Attack (12°) at a Reynolds Number of 6e6
 Three structured meshes were generated using a constant Grid Refinement Factor of approximately 1.41 (doubling the total 2D cell count at each step). The first cell height was mathematically locked across all three grids via bias factor adjustments to maintain y-plus < 1.
 
 | Metric                    | Coarse Mesh           | Medium Mesh           | Fine Mesh
+| :---                      | :---                  | :---                  | :---
 | **Total Cells**           | 97,500                | 192,500               | 390,000
 | **Edge 1 (Wall Normal)**  | 125 div (Bias: 1.3e6) | 175 div (Bias: 9.0e5) | 250 div (Bias: 6.0 e5)
 | **Edge 2 (Wake)**         | 60 divisions          | 85 divisions          | 120 divisions
@@ -24,7 +25,8 @@ Three structured meshes were generated using a constant Grid Refinement Factor o
 | **Edge 4 (Airfoil)**      | 80 divisions          | 115 divisions         | 160 divisions
 
 ## 4. Results Table
-| Mesh Level | Cell Count | Cl	   | Cd       | % delta Cd 
+| Mesh Level | Cell Count | Cl	   | Cd       | % delta Cd
+| :---       | :---   | :---       | :---     | :---
 | **Coarse** | 97,500	  | 1.2419 | 0.017259 | Medium to Coarse: 2.076%
 | **Medium** | 192,500	  | 1.2444 | 0.016908 | Fine to Medium: 0.517%
 | **Fine**   | 390,000	  | 1.2447 | 0.016821 |
