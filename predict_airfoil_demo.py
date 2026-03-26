@@ -95,7 +95,7 @@ Calculated Global Forces:
 
 Performance Metrics & Expected Constraints:
 - Inference Wall-time: < 0.05 seconds 
-- Computational Speedup: ~246,000x relative to standard Fluent RANS solver
+- Computational Speedup: ~93,424x relative to standard Fluent RANS solver
 - Expected Cl Error vs CFD: < 2.0% (via Direct MLP)
 - Expected Momentum Integration Error: < 5.0% (via PINN spatial distribution)
 - Utilized Architectures: Physics-Informed 1D-CNN, Direct Dense MLP
