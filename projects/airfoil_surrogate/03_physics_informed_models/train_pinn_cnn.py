@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 import joblib
 import matplotlib.pyplot as plt
 
-# Flagship Model: Physics-Informed 1D-CNN (PINN-CNN)
+# Physics-Informed 1D-CNN (PINN-CNN)
 # Objective: Combine the spatial awareness of a 1D-CNN with a custom Navier-Stokes 
 # integration constraint to achieve high-fidelity extrapolation for both local 
 # pressure distributions and global aerodynamic forces.
@@ -24,7 +24,7 @@ DATA_PATH = os.path.join(PROJECT_ROOT, "data", "datasets", "airfoil_dataset.npz"
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 REPORTS_DIR = os.path.join(PROJECT_ROOT, "reports")
 
-print("Loading CFD baseline data for PINN-CNN training...")
+print("Loading aerodynamic dataset")
 data = np.load(DATA_PATH)
 X_raw = data["X"]
 y_cp = data["y_cp"]
@@ -34,7 +34,6 @@ x_grid = data["x_grid"]
 aoa = X_raw[:, 0].reshape(-1, 1)
 NUM_POINTS = len(x_grid) 
 
-# CRITICAL FIX: Airfoils use non-uniform meshes (cosine clustering). 
 # We must calculate the exact varying dx for every single panel.
 dx_array = x_grid[1:] - x_grid[:-1]
 dx_tensor = tf.constant(dx_array, dtype=tf.float32)
@@ -98,7 +97,7 @@ model = keras.Sequential([
 optimizer = keras.optimizers.Adam(learning_rate=1e-3)
 lambda_physics_var = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 
-# ADAPTIVE PHYSICS-INFORMED TRAINING LOOP
+# Adaptive PHYSICS-INFORMED training loop
 @tf.function
 def train_step(x_batch, y_cp_batch, y_cl_batch):
     with tf.GradientTape() as tape:
@@ -108,7 +107,7 @@ def train_step(x_batch, y_cp_batch, y_cl_batch):
         cp_upper = cp_pred[:, :, 0]
         cp_lower = cp_pred[:, :, 1]
         
-        # CORRECT NON-UNIFORM TRAPEZOIDAL INTEGRATION
+        # non-uniform trapezoidal integration
         dcp = cp_lower - cp_upper
         mids = (dcp[:, :-1] + dcp[:, 1:]) / 2.0
         cn_pred = tf.reduce_sum(mids * dx_tensor, axis=1, keepdims=True)
@@ -132,7 +131,7 @@ def val_step(x_batch, y_cp_batch, y_cl_batch):
     cp_upper = cp_pred[:, :, 0]
     cp_lower = cp_pred[:, :, 1]
     
-    # CORRECT NON-UNIFORM TRAPEZOIDAL INTEGRATION
+
     dcp = cp_lower - cp_upper
     mids = (dcp[:, :-1] + dcp[:, 1:]) / 2.0
     cn_pred = tf.reduce_sum(mids * dx_tensor, axis=1, keepdims=True)
@@ -146,7 +145,7 @@ def val_step(x_batch, y_cp_batch, y_cl_batch):
 
     return data_loss, phys_loss, total_loss
 
-# --- 6. EXECUTION WITH ANNEALING SCHEDULE ---
+# execution
 EPOCHS = 350
 history = {"train_total_loss": [], "val_total_loss": [], "val_phys_loss": []}
 
@@ -154,7 +153,7 @@ RAMP_START_EPOCH = 50
 RAMP_END_EPOCH = 250    
 LAMBDA_MAX = 1.5        
 
-print("Starting PINN Optimization with True Non-Uniform Integration")
+print("Starting PINN Optimization with Non-Uniform Integration")
 
 for epoch in range(EPOCHS):
     if epoch < RAMP_START_EPOCH:
@@ -187,8 +186,8 @@ for epoch in range(EPOCHS):
     if epoch % 50 == 0 or epoch == EPOCHS - 1:
         print(f"Epoch {epoch:03d} | Lambda: {current_lambda:.2f} | Train Loss: {t_total.result():.4f} | Val Loss: {v_total.result():.4f} | Phys Error: {v_phys.result():.6f}")
 
-# --- 7. EXTRAPOLATION EVALUATION ---
-print("\nEvaluating PINN-CNN on High-Alpha Extrapolation Set (>12 deg)...")
+# Evaluation
+print("\nEvaluating PINN-CNN on High-Alpha Extrapolation Set (>12 deg)")
 pred_test = model.predict(aoa_test_scaled, verbose=0)
 
 cp_upper = pred_test[:, :, 0]
