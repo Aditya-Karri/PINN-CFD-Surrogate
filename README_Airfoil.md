@@ -4,16 +4,20 @@
 Computational Fluid Dynamics (CFD) provides high-fidelity aerodynamic data, but it is notoriously computationally expensive. A standard 2D airfoil simulation can take upwards of 10 to 15 minutes to converge, making rapid design iteration, aerodynamic optimization, and real-time control system design computationally prohibitive. 
 
 The objective of this project is not to eliminate CFD, but to augment it. By developing a Physics-Informed Machine Learning architecture, we effectively create a **continuous, high-dimensional surrogate model**. Once trained on a foundation of high-fidelity Navier-Stokes data, this surrogate bypasses iterative solvers to predict macroscopic aerodynamic forces (Lift and Drag) and microscopic spatial flow fields (Surface Pressure Coefficient, $C_p$) in fractions of a second, based purely on the Angle of Attack (AoA).
+
 ---
+
 ## 2. Mesh Strategy and Verification
 A rigorous grid-independence and boundary layer resolution study was conducted prior to dataset generation to ensure the neural network was trained on physically accurate ground truth data.
 
 * **Mesh Type:** A fully structured, face-mapped Quad4 C-Grid topology. This ensures perfect alignment with the streamwise flow, minimizing numerical diffusion.
+Roache's Grid Convergence Index (GCI) method was applied across Coarse (97k), Medium (192.5k), and Fine (390k) grids. The **Medium Mesh (192,500 cells)** was selected because it achieved a GCI of just 0.85% for drag, providing grid-independent accuracy while saving 50% in computational overhead compared to the fine mesh.
+* **Read the full report:** [Mesh Convergence & Independence Study](reports/Mesh_Convergence_&_Independence_Study.md)
 * **Boundary Layer (BL) Settings:** The first cell height was mathematically locked via bias factor adjustments to enforce a non-dimensional wall distance of **$y^+ < 1.0$**. Validation at the most extreme flow condition ($\alpha = 18^\circ$) confirmed a maximum $y^+$ of $\approx 0.45$ and an average $y^+$ of $< 0.15$.
 * **Why this choice:** 1. Resolving the viscous sublayer ($y^+ \le 1.0$) is a strict mathematical requirement for the $k-\omega$ SST model to accurately predict adverse pressure gradients and flow separation without relying on wall functions.
-  2. Roache's Grid Convergence Index (GCI) method was applied across Coarse (97k), Medium (192.5k), and Fine (390k) grids. The **Medium Mesh (192,500 cells)** was selected because it achieved a GCI of just 0.85% for drag, providing grid-independent accuracy while saving 50% in computational overhead compared to the fine mesh.
-* **Read the full report:** [Mesh Convergence & Independence Study](reports/Mesh_Convergence_&_Independence_Study.md)
+* **Read the full report:** [y plus Study](reports/yplus_Study.md)
 --- 
+
 ## 3. Dataset Generation (CFD Automation)
 To train an effective surrogate, a robust, programmatic data-generation pipeline was engineered using Python to drive ANSYS Fluent in batch mode via TUI journal files.
 
@@ -26,6 +30,7 @@ To train an effective surrogate, a robust, programmatic data-generation pipeline
 * **Capturing Stall:** To ensure the neural network learns the complex, non-linear physics of boundary layer separation, the sweep resolution was strategically tightened to 0.5° intervals within the critical stall regime.
 
 ---
+
 ## 4. Numerical Verification & Experimental Validation
 Before committing to the computationally expensive generation of the machine learning dataset, a rigorous verification study was conducted. The goal was to prove that the selected 10-chord radius C-Grid and solver settings produced mathematically sound and physically accurate ground truth data.
 
@@ -41,6 +46,7 @@ To do this, a **3-Way Aerodynamic Comparison** was performed at three critical a
 The Fluent setup (blue squares) perfectly intersects the NASA CFL3D benchmark (red stars) on the lift curve, unequivocally verifying the numerical accuracy of the mesh and solver. The slight under-prediction in the drag polar compared to the Ladson experimental data (black circles) is expected and physically consistent; it represents the difference between a perfect 2D numerical profile and the parasitic drag penalty introduced by the physical sand grit used to trip the boundary layer in the actual wind tunnel.
 
 ---
+
 ## 5. Data Extraction and Standardization (ETL)
 Neural networks require perfectly uniform input tensors. However, native CFD exports are inherently unstructured; the surface coordinate distribution varies depending on the specific mesh deformation, boundary layer inflation, or local flow solution. 
 
@@ -61,6 +67,7 @@ The resulting dataset successfully captured the non-linear aerodynamics across t
 </div>
 
 ---
+
 ## 6. Machine Learning Architecture
 The core challenge in replacing a CFD solver is mapping a scalar input (Angle of Attack) to a high-dimensional spatial output (a 300-point $C_p$ curve). 
 
@@ -140,6 +147,7 @@ The PINN-CNN successfully learned to predict the complex boundary layer physics 
 </div>
 
 ---
+
 ## 7. Performance: Speed vs. Accuracy Tradeoff
 The PINN-CNN architecture successfully decoupled aerodynamic fidelity from computational cost, producing a surrogate ready for real-time deployment.
 
@@ -153,6 +161,7 @@ The PINN-CNN architecture successfully decoupled aerodynamic fidelity from compu
 *Note: While the 15,800x speedup represnts raw mathematical inference, the end-to-end Command Line Interface(CLI) script delivers a >2,400x speedup over the RANS solver. The surrogate provides near-perfect accuracy in the linear regime, with error bounding strictly under 3% even when predicting deep boundary layer separation ($>12^\circ$ AoA) that it was never trained on.*
 
 ---
+
 ## 8. How to Reproduce Results
 The repository is structured to allow immediate inference testing without requiring an ANSYS license or heavy compute resources.
 
